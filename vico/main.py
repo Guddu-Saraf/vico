@@ -1,20 +1,15 @@
 import typer
 
 from vico.commands.create import create
+from vico.commands.init import init
+from vico.commands.close import close
 
 
 app = typer.Typer()
 
-
-@app.callback()
-def callback():
-    """Vico project scaffolding CLI."""
-    # Empty callback: keeps Typer's subcommand semantics (e.g. `create`)
-    # even with only one command registered — without this, Typer
-    # collapses to a single top-level command with no subcommand name.
-
-
-app.command(name="create")(create)
+app.command()(create)
+app.command()(init)
+app.command()(close)
 
 
 if __name__ == "__main__":
