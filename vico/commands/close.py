@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import typer
@@ -27,3 +28,14 @@ def close():
         project_file.unlink()
 
     typer.echo("Vico project closed.")
+
+    # If the shell that invoked this CLI currently has this project's venv
+    # active, VIRTUAL_ENV was inherited into this process's environment.
+    # This is a real check, not a guess: `deactivate` itself is the same
+    # command on cmd.exe, PowerShell, bash, zsh, fish and csh, so there's
+    # no OS/shell branching needed the way there is for activation.
+    venv_path = project_path / ".venv"
+    active_venv = os.environ.get("VIRTUAL_ENV")
+
+    if active_venv and Path(active_venv).resolve() == venv_path.resolve():
+        typer.echo("Run 'deactivate' to exit the virtual environment.")

@@ -1,3 +1,5 @@
+import os
+import platform
 import shutil
 import sys
 import threading
@@ -47,6 +49,50 @@ def _create_venv_with_spinner(venv_path: Path) -> None:
         raise error[0]
 
 
+def _activation_hint(venv_path: Path) -> str:
+    """
+    Best-effort activation command for whatever shell invoked this CLI.
+
+    IMPORTANT: this process cannot activate the venv *for* the user.
+    Activation works by sourcing a script into the CURRENT shell process,
+    which changes that shell's own environment variables. A subprocess
+    (this CLI) has no way to reach back into its parent shell's
+    environment -- any activation "run" internally here would be invisible
+    and discarded the moment this process exits. The best this can do is
+    print the correct command for the user to run themselves.
+    """
+    system = platform.system()
+
+    if system == "Windows":
+        scripts_dir = venv_path / "Scripts"
+
+        if os.environ.get("MSYSTEM"):
+            # Git Bash / MSYS2 / MinGW shell - reliably detectable via MSYSTEM
+            return f"source {scripts_dir / 'activate'}"
+
+        # From inside a subprocess there is no reliable, dependency-free way
+        # to tell cmd.exe apart from PowerShell (both leave similar env
+        # vars), so show both rather than guess and risk giving the wrong one.
+        cmd_activate = scripts_dir / "activate.bat"
+        ps1_activate = scripts_dir / "Activate.ps1"
+        return (
+            f"cmd.exe:     {cmd_activate}\n"
+            f"  PowerShell:  {ps1_activate}"
+        )
+
+    # POSIX: Linux, macOS
+    bin_dir = venv_path / "bin"
+    shell = os.environ.get("SHELL", "")
+
+    if shell.endswith("fish"):
+        return f"source {bin_dir / 'activate.fish'}"
+    if shell.endswith(("csh", "tcsh")):
+        return f"source {bin_dir / 'activate.csh'}"
+
+    # Default: bash/zsh/sh and anything else POSIX-compatible
+    return f"source {bin_dir / 'activate'}"
+
+
 def init():
     """Initialize the current Vico project."""
 
@@ -72,3 +118,4 @@ def init():
         raise typer.Exit(code=1)
 
     typer.echo(f"Project registered: {project_path}")
+    typer.echo(f"To activate the virtual environment, run:\n  {_activation_hint(venv_path)}")
