@@ -11,6 +11,11 @@ logger = logging.getLogger(__name__)
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+from sqlalchemy.orm import DeclarativeBase
+
+
+class Base(DeclarativeBase):
+    pass
 
 def _get_int_env(name: str, default: str) -> int:
     raw = os.getenv(name, default)
