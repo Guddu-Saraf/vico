@@ -1,0 +1,387 @@
+# Vico = vibe code. Design to remove repetitive file setup and Vico itself a vibe code cli but created because real problem exits and faced my me. 
+
+**Vico** is a Python CLI and backend project orchestration tool designed to automate repetitive setup and configuration tasks in Python backend projects.
+
+Instead of replacing existing tools, Vico works with them — such as Python virtual environments, SQLAlchemy, PostgreSQL, Redis, Alembic, and other backend infrastructure.
+
+The goal is simple:
+
+> **Reduce repetitive backend setup so you can focus on building the application.**
+
+## Features and upcoming features
+
+* Create backend projects from a reusable template
+* Initialize project environments
+* Project-aware CLI commands
+* Environment configuration through `.env`
+* Database configuration
+* SQLAlchemy connection pooling configuration
+* Redis configuration
+* Database migration setup
+* Development environment management
+* Centralized Vico project management
+* CLI interaction with the Vico manager
+
+## Architecture
+
+Vico V2 is divided into two main parts:
+
+```text
+Vico
+│
+├── Vico CLI
+│   ├── Project boilerplate
+│   └── Vico Manager interaction
+│
+└── Vico Manager
+    └── Project-level orchestration
+```
+
+The CLI is intentionally lightweight. Application-specific code belongs to the generated project template rather than inside the CLI itself.
+
+## Installation
+
+```bash
+pip install vico
+```
+
+## Create a Project
+
+```bash
+vico create myproject
+```
+
+This creates a new Vico project using the default project template.
+
+Then enter the project:
+
+```bash
+cd myproject
+```
+
+Initialize it:
+
+```bash
+vico init
+```
+
+## Configuration
+
+Vico uses `.env` as the project's configuration control room.
+
+Example:
+
+```env
+# Database
+DATABASE_URL=
+
+# SQLAlchemy connection pool
+POOL_SIZE=5
+MAX_OVERFLOW=10
+POOL_TIMEOUT=30
+POOL_RECYCLE=1800
+
+# PgBouncer
+PGBOUNCER_ENABLED=false
+```
+
+This allows infrastructure settings to be changed without modifying application code.
+
+## Database
+
+Vico does not implement its own database engine or ORM.
+
+It works with existing Python database tooling and exposes configuration for components such as:
+
+* PostgreSQL
+* SQLAlchemy
+* Alembic
+* SQLAlchemy connection pooling
+
+For example:
+
+```env
+POOL_SIZE=5
+MAX_OVERFLOW=10
+POOL_TIMEOUT=30
+POOL_RECYCLE=1800
+```
+
+Vico's role is orchestration and configuration — not replacing these technologies.
+
+## Redis
+
+Vico can manage Redis-related project configuration while relying on the existing Redis ecosystem and Python Redis clients.
+
+## Project Philosophy
+
+Vico follows a simple principle:
+
+```text
+Vico
+  ↓
+Automates repetitive setup
+  ↓
+Existing backend tools do the actual work
+```
+
+Vico is **not** intended to replace:
+
+* FastAPI
+* Flask
+* SQLAlchemy
+* PostgreSQL
+* Redis
+* Alembic
+* Docker
+* Python
+* pip
+
+Instead, it provides an orchestration layer around these tools.
+
+## Why Vico?
+
+Setting up a backend project repeatedly can involve the same steps:
+
+```text
+Create project
+     ↓
+Create virtual environment
+     ↓
+Install dependencies
+     ↓
+Configure environment
+     ↓
+Configure database
+     ↓
+Configure migrations
+     ↓
+Configure Redis
+     ↓
+Start development
+```
+
+Vico aims to turn repetitive setup into a small number of commands.
+
+## Status
+
+**Vico V2**
+
+The V2 architecture focuses on separating:
+
+* the CLI
+* project templates
+* the Vico manager
+* project-level configuration
+
+The project is currently being prepared for public release through PyPI.
+
+# Vico — Commands & Usage
+
+This document contains the available Vico commands and their basic usage.
+
+---
+
+## 1. `vico create`
+
+Creates a new Vico project from the default project template.
+
+### Usage
+
+```bash
+vico create <project-name>
+```
+
+### Example
+
+```bash
+vico create myproject
+```
+
+Output:
+
+```text
+Created project: myproject
+Location: D:\myproject
+```
+
+After creating the project:
+
+```bash
+cd myproject
+```
+
+---
+
+## 2. `vico init`
+
+Initializes the current directory as a Vico project.
+
+It creates the project's virtual environment and registers the project with Vico.
+
+### Usage
+
+```bash
+vico init
+```
+
+Example:
+
+```text
+Virtual environment created.
+Project registered: D:\myproject
+```
+
+---
+
+## 3. `vico cwd`
+
+Shows the Vico project currently registered for the current environment.
+
+### Usage
+
+```bash
+vico cwd
+```
+
+Example:
+
+```text
+Current Vico project:
+D:\myproject
+```
+
+---
+
+## 4. `vico close`
+
+Closes the currently registered Vico project.
+
+### Usage
+
+```bash
+vico close
+```
+
+This removes the current project's active Vico registration.
+
+---
+
+## Typical Workflow
+
+A basic Vico workflow looks like this:
+
+```text
+vico create myproject
+        ↓
+cd myproject
+        ↓
+vico init
+        ↓
+Start developing
+```
+
+### Complete example
+
+```bash
+vico create myproject
+cd myproject
+vico init
+vico cwd
+```
+
+---
+
+# Project Structure
+
+A Vico-created project contains the application files and Vico-specific project management files.
+
+The exact structure may evolve as Vico develops.
+
+```text
+myproject/
+│
+├── app/
+├── .env
+├── vico/
+├── ...
+└── .venv/
+```
+
+The generated application code belongs to the project template. Vico itself remains the CLI and orchestration layer.
+
+---
+
+# Configuration
+
+Vico uses `.env` as the project's configuration control room.
+
+Example:
+
+```env
+# Database
+DATABASE_URL=
+
+# SQLAlchemy connection pool
+POOL_SIZE=5
+MAX_OVERFLOW=10
+POOL_TIMEOUT=30
+POOL_RECYCLE=1800
+
+# PgBouncer
+PGBOUNCER_ENABLED=false
+```
+
+Configuration values can be changed without modifying the generated application code.
+
+---
+
+# Command Summary
+
+| Command              | Purpose                                     |
+| -------------------- | ------------------------------------------- |
+| `vico create <name>` | Create a new Vico project                   |
+| `vico init`          | Initialize and register the current project |
+| `vico cwd`           | Show the current Vico project               |
+| `vico close`         | Close the current Vico project              |
+
+---
+
+# Help
+
+To view the available commands:
+
+```bash
+vico --help
+```
+
+For command-specific help:
+
+```bash
+vico <command> --help
+```
+
+Example:
+
+```bash
+vico create --help
+```
+
+```bash
+vico init --help
+```
+
+```bash
+vico cwd --help
+```
+
+```bash
+vico close --help
+```
+
+
+
+
+## License
+
+License information will be added with the project release.

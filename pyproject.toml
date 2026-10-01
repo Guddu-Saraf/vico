@@ -3,16 +3,19 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "vico"
-version = "0.1.0"
+name = "vico-cli"
+version = "0.1.6"
 description = "A simple CLI for creating Python backend projects"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 dependencies = [
-    "typer>=0.12.0,<1.0.0"
+    "typer>=0.12.0,<1.0.0",
+    "alembic>=1.0.0,<2.0.0",
+    "python-dotenv>=1.0.0,<2.0.0",
+    "fastapi>=0.100.0,<1.0.0",
+    "uvicorn>=0.20.0,<1.0.0",
 ]
-
 [project.scripts]
 vico = "vico.main:app"
 

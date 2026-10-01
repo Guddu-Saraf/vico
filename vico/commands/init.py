@@ -1,6 +1,7 @@
 import os
 import platform
 import shutil
+import subprocess
 import sys
 import threading
 import time
@@ -48,6 +49,50 @@ def _create_venv_with_spinner(venv_path: Path) -> None:
     if error:
         raise error[0]
 
+
+# Vico is currently only published on TestPyPI, pinned to this version.
+# Once it's released on PyPI proper, drop the index args and (if desired)
+# the version pin below.
+_TEST_PYPI_INDEX_URL = "https://test.pypi.org/simple/"
+_TEST_PYPI_VICO_VERSION = "0.1.4"
+
+
+# def _install_vico(venv_path: Path) -> None:
+#     """Install Vico into the project's virtual environment."""
+
+#     if platform.system() == "Windows":
+#         python_executable = venv_path / "Scripts" / "python.exe"
+#     else:
+#         python_executable = venv_path / "bin" / "python"
+
+#     subprocess.run(
+#         [
+#             str(python_executable),
+#             "-m",
+#             "pip",
+#             "install",
+#             "--index-url",
+#             _TEST_PYPI_INDEX_URL,
+#             # TestPyPI doesn't mirror Vico's dependencies, so fall back to
+#             # regular PyPI for anything it can't find (fastapi, uvicorn, etc.).
+#             "--extra-index-url",
+#             "https://pypi.org/simple",
+#             f"vico=={_TEST_PYPI_VICO_VERSION}",
+#         ],
+#         check=True,
+#     )
+def _install_vico(venv_path: Path) -> None:
+    """Install Vico into the project's virtual environment."""
+
+    if platform.system() == "Windows":
+        python_executable = venv_path / "Scripts" / "python.exe"
+    else:
+        python_executable = venv_path / "bin" / "python"
+
+    subprocess.run(
+        [str(python_executable), "-m", "pip", "install", "vico-cli"],
+        check=True,
+    )
 
 def _activation_hint(venv_path: Path) -> str:
     """
@@ -110,6 +155,14 @@ def init():
             raise typer.Exit(code=1)
 
         typer.echo("Virtual environment created.")
+
+        try:
+            _install_vico(venv_path)
+        except subprocess.CalledProcessError:
+            typer.echo("Failed to install Vico in the virtual environment.", err=True)
+            raise typer.Exit(code=1)
+
+        typer.echo("Vico installed in the virtual environment.")
 
     try:
         save_current_project(project_path)
