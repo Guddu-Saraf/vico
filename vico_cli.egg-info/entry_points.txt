@@ -1,2 +1,0 @@
-[console_scripts]
-vico = vico.main:app
