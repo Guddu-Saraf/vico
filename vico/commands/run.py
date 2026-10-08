@@ -82,7 +82,12 @@ def check_required_modules(project_path: Path) -> bool:
     return True
 
 
-def run(dev: bool = typer.Option(False, "--dev")):
+def run(
+    dev: bool = typer.Option(False, "--dev"),
+    port: int = typer.Option(
+        8000, "--port", "-p", min=1, max=65535, help="Port to run the server on."
+    ),
+):
     """Run the FastAPI application."""
 
     project_path = get_current_project()
@@ -134,7 +139,7 @@ def run(dev: bool = typer.Option(False, "--dev")):
 
         typer.echo("uv installed successfully.")
 
-    command = ["uv", "run", "uvicorn", "main:app"]
+    command = ["uv", "run", "uvicorn", "main:app", "--port", str(port)]
 
     if dev:
         command.append("--reload")
