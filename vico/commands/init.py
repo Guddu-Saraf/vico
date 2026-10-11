@@ -6,6 +6,7 @@ import sys
 import threading
 import time
 import venv
+from importlib.metadata import PackageNotFoundError, version as pkg_version
 from itertools import cycle
 from pathlib import Path
 
@@ -50,37 +51,6 @@ def _create_venv_with_spinner(venv_path: Path) -> None:
         raise error[0]
 
 
-# Vico is currently only published on TestPyPI, pinned to this version.
-# Once it's released on PyPI proper, drop the index args and (if desired)
-# the version pin below.
-_TEST_PYPI_INDEX_URL = "https://test.pypi.org/simple/"
-_TEST_PYPI_VICO_VERSION = "0.1.4"
-
-
-# def _install_vico(venv_path: Path) -> None:
-#     """Install Vico into the project's virtual environment."""
-
-#     if platform.system() == "Windows":
-#         python_executable = venv_path / "Scripts" / "python.exe"
-#     else:
-#         python_executable = venv_path / "bin" / "python"
-
-#     subprocess.run(
-#         [
-#             str(python_executable),
-#             "-m",
-#             "pip",
-#             "install",
-#             "--index-url",
-#             _TEST_PYPI_INDEX_URL,
-#             # TestPyPI doesn't mirror Vico's dependencies, so fall back to
-#             # regular PyPI for anything it can't find (fastapi, uvicorn, etc.).
-#             "--extra-index-url",
-#             "https://pypi.org/simple",
-#             f"vico=={_TEST_PYPI_VICO_VERSION}",
-#         ],
-#         check=True,
-#     )
 def _install_vico(venv_path: Path) -> None:
     """Install Vico into the project's virtual environment."""
 
@@ -89,8 +59,16 @@ def _install_vico(venv_path: Path) -> None:
     else:
         python_executable = venv_path / "bin" / "python"
 
+    # Install the same version as the running CLI so the project venv
+    # always matches. Falls back to the latest if the version can't be
+    # determined (e.g. running from a source checkout).
+    try:
+        requirement = f"vico-cli=={pkg_version('vico-cli')}"
+    except PackageNotFoundError:
+        requirement = "vico-cli"
+
     subprocess.run(
-        [str(python_executable), "-m", "pip", "install", "vico-cli"],
+        [str(python_executable), "-m", "pip", "install", requirement],
         check=True,
     )
 
